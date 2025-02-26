@@ -497,7 +497,7 @@ class PdfArranger(Gtk.Application):
         self.apply_hide_margins_on_pages(pages)
 
         # Need uniform page size.
-        if not is_same_page_size(pages):
+        if not is_same_page_size(pages, relative_accuracy = 0.001):
             msg = _('All pages must have the same size.')
             self.error_message_dialog(msg)
             return
@@ -3145,11 +3145,15 @@ class PdfArranger(Gtk.Application):
         if response == Gtk.ResponseType.OK:
             error_msg_dlg.destroy()
 
-def is_same_page_size(pages):
+def is_same_page_size(pages, relative_accuracy = None):
     p1w, p1h = pages[0].size_in_points()
+    errh = errw = 1e-2
+    if relative_accuracy != None:
+        errw = relative_accuracy * p1w
+        errh = relative_accuracy * p1h
     for page in pages[1:]:
         pw, ph = page.size_in_points()
-        if abs(p1w-pw) > 1e-2 or abs(p1h-ph) > 1e-2:
+        if abs(p1w-pw) > errw or abs(p1h-ph) > errh:
             return False
     return True
 
